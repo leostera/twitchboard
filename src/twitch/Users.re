@@ -11,6 +11,8 @@ module User = {
     let display_name = json |> member("display_name") |> to_string;
     let id = json |> member("id") |> to_string;
 
+    Logs.debug(m => m("User.from_json"));
+
     Ok({login, display_name, id});
   };
 };

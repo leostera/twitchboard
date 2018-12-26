@@ -28,8 +28,8 @@ module Response = {
         );
       read_response();
     | _ =>
-      Lwt.wakeup_later(wakeup, Error(`Reading_error));
       Logs.err(m => m("Something went wrong"));
+      Lwt.wakeup_later(wakeup, Error(`Reading_error));
     };
     next;
   };
@@ -49,7 +49,7 @@ let writev = (tls_client, _fd, io_vecs) =>
         | Unix.Unix_error(Unix.EBADF, "check_descriptor", _) =>
           Lwt.return(`Closed)
         | exn =>
-          Lwt_io.eprintlf("failed: %s", Printexc.to_string(exn))
+          Logs_lwt.err(m => m("failed: %s", Printexc.to_string(exn)))
           >>= (() => Lwt.fail(exn))
         },
     )
@@ -62,13 +62,23 @@ let read = (tls_client, _fd, buffer) =>
         buffer
         |> Httpaf_lwt.Buffer.put(~f=(bigstring, ~off, ~len) =>
              Tls_lwt.Unix.read_bytes(tls_client, bigstring, off, len)
-           )
-        >|= (len => `Ok(len)),
+           ),
       exn =>
-        Logs_lwt.err(m =>
-          m("Https reading error: %s", Printexc.to_string(exn))
-        )
-        >>= (() => Lwt.fail(exn)),
+        Logs_lwt.err(m => m("Https.read: %s", Printexc.to_string(exn)))
+        >>= (
+          () => {
+            Lwt.async(() => Tls_lwt.Unix.close(tls_client));
+            Lwt.fail(exn);
+          }
+        ),
+    )
+    >|= (
+      bytes_read =>
+        if (bytes_read == 0) {
+          `Eof;
+        } else {
+          `Ok(bytes_read);
+        }
     )
   );
 
@@ -86,6 +96,7 @@ let send = (~meth=`GET, ~headers=[], ~body=?, uri) => {
     Lwt.wakeup_later(notify_response_received, Error(error));
 
   let host = Uri.host_with_default(uri);
+
   Lwt_unix.getaddrinfo(host, "443", [Unix.(AI_FAMILY(PF_INET))])
   >>= (
     addresses => {

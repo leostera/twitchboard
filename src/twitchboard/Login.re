@@ -13,7 +13,6 @@ module Endpoints = {
 
     fetch("/auth/success/"+access_token)
       .then( res => {
-        alert("Success! We have logged you in correctly. This window will now close.")
         self.close();
       });
   </script>
@@ -91,7 +90,9 @@ module Server = {
   };
 };
 
-let login = _ =>
+let login = _ => {
+  Sys.(set_signal(sigpipe, Signal_ignore));
+
   switch (Bos.OS.Dir.create(Config.default_config_path)) {
   | Ok(_) =>
     Logs.app(m => m("Beginning login flow..."));
@@ -122,6 +123,7 @@ let login = _ =>
     };
 
     run_server |> Lwt_main.run;
+
     switch (Rresult.(Secrets.read_default() >>| Secrets.token)) {
     | exception err =>
       Logs.err(m => m("Somethiing went south %s", Printexc.to_string(err)))
@@ -147,3 +149,4 @@ let login = _ =>
 
   | Error(`Msg(msg)) => Logs.err(m => m("Something went wrong: %s", msg))
   };
+};
