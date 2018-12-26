@@ -1,0 +1,24 @@
+opam-version: "2.0"
+name: "twitchboard"
+version: "0.1"
+synopsis: "Real-time stream stats for Twitch.tv"
+maintainer: "Leandro Ostera <leandro@ostera.io>"
+authors: "Leandro Ostera <leandro@ostera.io>"
+license: "MIT"
+homepage: "https//github.com/ostera/twitchboard"
+bug-reports: "https//github.com/ostera/twitchboard/issues"
+depends: [
+  "bos"
+  "cmdliner"
+  "fmt"
+  "httpaf"
+  "httpaf-lwt"
+  "logs"
+  "lwt"
+  "parsexp"
+
+  "dune" {build}
+  "reason" {build}
+]
+build: [make "build"]
+install: [make "install"]

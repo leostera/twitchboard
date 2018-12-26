@@ -1,0 +1,6 @@
+(library
+  (name twitchboard)
+  (libraries
+    twitch
+    parsexp sexplib0 bos
+    httpaf httpaf-lwt lwt logs logs.lwt))

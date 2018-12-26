@@ -1,0 +1,6 @@
+(executable
+  (name Main)
+  (public_name twitchboard)
+  (libraries
+    twitchboard
+    cmdliner fmt.tty logs.fmt logs.cli))

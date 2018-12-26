@@ -1,0 +1,7 @@
+(library
+  (name twitch)
+  (libraries
+    rresult
+    yojson uri httpaf httpaf-lwt lwt tls tls.lwt
+    logs logs.lwt stdlib
+    ))
