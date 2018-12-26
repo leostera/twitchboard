@@ -55,7 +55,7 @@ let writev = (tls_client, _fd, io_vecs) =>
     )
   );
 
-let read = (tls_client, _fd, buffer) =>
+let read = (tls_client, fd, buffer) =>
   Lwt.(
     catch(
       () =>
@@ -63,14 +63,23 @@ let read = (tls_client, _fd, buffer) =>
         |> Httpaf_lwt.Buffer.put(~f=(bigstring, ~off, ~len) =>
              Tls_lwt.Unix.read_bytes(tls_client, bigstring, off, len)
            ),
-      exn =>
-        Logs_lwt.err(m => m("Https.read: %s", Printexc.to_string(exn)))
-        >>= (
-          () => {
+      exn => {
+        let err = Printexc.to_string(exn);
+        (
+          switch (Lwt_unix.state(fd)) {
+          | Lwt_unix.Closed =>
+            Logs_lwt.err(m => m("Https.read: Socket closed"))
+          | Aborted(exn) =>
+            Logs_lwt.err(m =>
+              m("Https.read: Socket aborted: %s", Printexc.to_string(exn))
+            )
+          | Opened =>
             Lwt.async(() => Tls_lwt.Unix.close(tls_client));
-            Lwt.fail(exn);
+            Logs_lwt.err(m => m("Https.read: Socket opened! %s", err));
           }
-        ),
+        )
+        >>= (_ => Lwt.fail(exn));
+      },
     )
     >|= (
       bytes_read =>
@@ -106,7 +115,12 @@ let send = (~meth=`GET, ~headers=[], ~body=?, uri) => {
       X509_lwt.authenticator(`No_authentication_I'M_STUPID)
       >>= (
         authenticator => {
-          let client = Tls.Config.client(~authenticator, ());
+          let client =
+            Tls.Config.client(
+              ~authenticator,
+              ~alpn_protocols=["http/1.1", "h2"],
+              (),
+            );
           Lwt_unix.connect(socket, socket_addr)
           >>= (_ => Tls_lwt.Unix.client_of_fd(client, ~host, socket));
         }
