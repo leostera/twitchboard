@@ -1,4 +1,4 @@
-# Tw!tchBoard — Real-time Stream Stats Tool for Twitch.tv
+# 📺 Tw!tchBoard — Real-time Stream Stats Tool for Twitch.tv
 
 As part of one of the episodes of [Reasonable Coding](https://twitch.tv/ostera) 
 we start building this command-line tool for twitch to get stream statistics in
