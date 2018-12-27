@@ -139,7 +139,15 @@ let login = _ => {
           result =>
             switch (result) {
             | Ok(user) =>
-              Logs_lwt.app(m => m("Welcome, %s", user.display_name))
+              Logs_lwt.app(m =>
+                m(
+                  {j|Welcome, %s
+Your configuration is saved in %s
+You may start using twitchboard now :)|j},
+                  user.display_name,
+                  Config.default_config_path |> Fpath.to_string,
+                )
+              )
             | Error(`Unauthorized(_)) =>
               Logs_lwt.err(m => m("Unauthorized request to Twitch API."))
             | Error(`Reading_error) =>

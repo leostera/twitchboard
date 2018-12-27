@@ -5,3 +5,6 @@ lib: [
 bin: [
   "_build/install/default/bin/twitchboard" {"twitchboard"}
 ]
+doc: [
+  "_build/install/default/doc/twitchboard/README.md"
+]
