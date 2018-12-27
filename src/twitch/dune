@@ -2,6 +2,7 @@
   (name twitch)
   (libraries
     rresult
-    httpkit yojson uri 
+    httpkit
+    yojson uri 
     logs logs.lwt stdlib
     ))

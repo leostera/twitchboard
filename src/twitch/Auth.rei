@@ -3,7 +3,7 @@ module Token: {
   type t;
   /** Creates a token from a string */
   let of_string: string => t;
-  let as_header: t => (string, string);
+  let to_string: t => string;
   let pp: t => string;
 };
 

@@ -140,10 +140,14 @@ let login = _ => {
             switch (result) {
             | Ok(user) =>
               Logs_lwt.app(m => m("Welcome, %s", user.display_name))
-            | Error(_msg) =>
-              Logs_lwt.err(m =>
-                m("Something went wrong while retrieving the user.")
-              )
+            | Error(`Unauthorized(_)) =>
+              Logs_lwt.err(m => m("Unauthorized request to Twitch API."))
+            | Error(`Reading_error) =>
+              Logs_lwt.err(m => m("while reading the error response."))
+            | Error(`Connection_error(_)) =>
+              Logs_lwt.err(m => m("while connecting to the Twitch API."))
+            | Error(`Response_error(_)) =>
+              Logs_lwt.err(m => m("while requesting from the Twitch API."))
             }
         )
         |> Lwt_main.run

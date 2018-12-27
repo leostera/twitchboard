@@ -3,7 +3,7 @@ module Token = {
 
   let of_string = str => str;
 
-  let as_header = token => ("Authentication", "Bearer " ++ token);
+  let to_string = token => token;
 
   let pp = x => x;
 };
