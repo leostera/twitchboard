@@ -140,7 +140,10 @@ let login = _ => {
             switch (result) {
             | Ok(user) =>
               Logs_lwt.app(m => m("Welcome, %s", user.display_name))
-            | Error(_msg) => Logs_lwt.err(m => m("Something went wrong!"))
+            | Error(_msg) =>
+              Logs_lwt.err(m =>
+                m("Something went wrong while retrieving the user.")
+              )
             }
         )
         |> Lwt_main.run

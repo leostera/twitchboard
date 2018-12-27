@@ -11,6 +11,7 @@ depends: [
   "bos"
   "cmdliner"
   "fmt"
+  "httpkit"
   "httpaf"
   "httpaf-lwt"
   "logs"

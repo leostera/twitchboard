@@ -22,28 +22,7 @@ let get_token_bearer: Auth.Token.t => Lwt.t(result(User.t, _)) =
     Lwt.Infix.(
       "https://api.twitch.tv/helix/users"
       |> Uri.of_string
-      |> Https.send(~headers=[token |> Auth.Token.as_header])
-      >>= (
-        result =>
-          switch (result) {
-          | Ok((res, body)) =>
-            Https.Response.read_body(res, body)
-            >|= (
-              body =>
-                Rresult.(
-                  body
-                  >>| (
-                    contents =>
-                      contents
-                      |> Yojson.Basic.from_string
-                      |> Yojson.Basic.Util.member("data")
-                  )
-                )
-            )
-          | Error(err) =>
-            Logs_lwt.err(m => m("Connection error!"))
-            >|= (_ => Error(`Connection_error(err)))
-          }
-      )
+      |> Httpkit.Client.Https.send(~headers=[token |> Auth.Token.as_header])
+      >>= Httpkit.Client.Response.body
       >|= (body => Rresult.(body >>= User.from_json))
     );
