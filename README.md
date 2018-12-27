@@ -18,7 +18,20 @@ Thus began `twitchboard`.
 
 The scope of it can be seen in the
 [SCOPE.md](https://github.com/ostera/twitchboard/tree/master/SCOPE.md)
-document.
+document. But we covered quite a few things:
+
+* Built a nice CLI for it
+* Read and Save config files to disk
+* Local HTTP Server serving a static page from memory and handling authentication flows
+* Requests to the Twitch API
+* Modeling the Twitch API into Reason libraries
+* JSON Parsing
+* Tons of Async stuff with Lwt going on!
+* Tons of Low-level HTTPS/TLS things going on too!
+
+In fact, I've extracted the HTTPS code (which was originally from @anmonteiro) 
+and I'll be experimenting with higher-level APIs for building type-safe native 
+HTTP/S servers and clients here: [ostera/httpkit](https://github.com/ostear/httpkit).
 
 ## Getting Started
 
