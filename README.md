@@ -1,16 +1,16 @@
 # 📺 Tw!tchBoard — Real-time Stream Stats Tool for Twitch.tv
 
 As part of one of the episodes of [Reasonable Coding](https://twitch.tv/ostera) 
-we start building this command-line tool for twitch to get stream statistics in
-real-time right in your terminal.
+we started building this command-line tool for Twitch.tv to get stream
+statistics in real-time right in your terminal.
 
 [Watch the stream here](https://www.twitch.tv/videos/354544842) — you're
 warned: it's really long (~7 hours), due to debugging a TLS error in our http
 library.
 
-Why on earth? Glad you asked. I mostly live on my terminal, so switching to my
-phone for the Twitch app or alt-tabbing to a browser in a different desktop is
-very disruptive while streaming.
+**Motivation**. Why on earth? Glad you asked. I mostly live on my terminal, so
+switching to my phone for the Twitch app or alt-tabbing to a browser in a
+different desktop is very disruptive while streaming.
 
 Having a small window with the stats, however, is quite okay 👌🏼.
 
@@ -31,7 +31,7 @@ document. But we covered quite a few things:
 
 In fact, I've extracted the HTTPS code (which was originally from @anmonteiro) 
 and I'll be experimenting with higher-level APIs for building type-safe native 
-HTTP/S servers and clients here: [ostera/httpkit](https://github.com/ostear/httpkit).
+HTTP/S servers and clients here: [ostera/httpkit](https://github.com/ostera/httpkit).
 
 ## Getting Started
 
