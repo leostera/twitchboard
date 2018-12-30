@@ -10,19 +10,11 @@ let write: (Fpath.t, t) => result(unit, _) =
     value |> Sexplib0.Sexp.to_string |> Bos.OS.File.write(path);
   };
 
-let read = path =>
+let parse = contents =>
   Rresult.R.(
-    path
-    |> Bos.OS.File.read
-    |> reword_error((`Msg(err)) => `File_error(err))
-    >>= (
-      file =>
-        file
-        |> Parsexp.Many.parse_string
-        |> reword_error(err =>
-             `Parse_error(Parsexp.Parse_error.message(err))
-           )
-    )
+    contents
+    |> Parsexp.Many.parse_string
+    |> reword_error(err => `Parse_error(Parsexp.Parse_error.message(err)))
     >>= (
       values =>
         switch (values) {
@@ -31,6 +23,14 @@ let read = path =>
         | _ => Error(`Invalid_secrets)
         }
     )
+  );
+
+let read = path =>
+  Rresult.R.(
+    path
+    |> Bos.OS.File.read
+    |> reword_error((`Msg(err)) => `File_error(err))
+    >>= parse
   );
 
 let read_default = () => read(Config.default_secret_path);
