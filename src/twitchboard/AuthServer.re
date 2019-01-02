@@ -41,12 +41,13 @@ module Endpoints = {
 
 let route_handler: Httpkit.Server.Common.route_handler(unit) =
   (ctx, path) =>
-    switch (path) {
-    | ["auth", "success", token] =>
-      Endpoints.auth_success(~closer=ctx.closer, token)
-    | ["auth", "callback"] => Endpoints.auth_callback()
-    | _ => `Unmatched
-    };
+    Endpoints.(
+      switch (path) {
+      | ["auth", "success", token] => auth_success(~closer=ctx.closer, token)
+      | ["auth", "callback"] => auth_callback()
+      | _ => `Unmatched
+      }
+    );
 
 let serve = (~port, ~on_start) =>
   Httpkit.(
