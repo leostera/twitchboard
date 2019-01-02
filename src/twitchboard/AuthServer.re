@@ -1,5 +1,4 @@
 module Endpoints = {
-  open Httpaf;
   let website = {j|
   <script>
     let access_token = window.location.hash //"#a=1&b=2"
@@ -27,61 +26,34 @@ module Endpoints = {
     | Error(`Msg(msg)) => Logs.err(m => m("Something went wrong! %s", msg))
     };
 
-    let headers = Headers.of_list([("Content-Length", "0")]);
-    Lwt.wakeup_later(closer, ());
-    (Response.create(`OK, ~headers), "");
+    let headers = [("Content-Length", "0")];
+    closer();
+    `With_headers((`OK, headers, ""));
   };
 
   let auth_callback = () => {
     Logs.info(m => m("Login flow completed."));
     let content_len = website |> String.length |> string_of_int;
-    let headers = Headers.of_list([("Content-Length", content_len)]);
-    (Response.create(`OK, ~headers), website);
+    let headers = [("Content-Length", content_len)];
+    `With_headers((`OK, headers, website));
   };
 };
 
-let request_handler = (~closer, _client, req_desc) => {
-  open Httpaf;
-  let req = Reqd.request(req_desc);
-  Logs.info(m => m("Auth Server %s", req.target));
-  let path = req.target |> String.split_on_char('/') |> List.tl;
-  let (res, contents) =
+let route_handler: Httpkit.Server.Common.route_handler(unit) =
+  (ctx, path) =>
     switch (path) {
-    | ["auth", "success", token] => Endpoints.auth_success(~closer, token)
+    | ["auth", "success", token] =>
+      Endpoints.auth_success(~closer=ctx.closer, token)
     | ["auth", "callback"] => Endpoints.auth_callback()
-    | _ =>
-      Logs.info(m => m("Unknown path %s", req.target));
-      let headers = Headers.of_list([("Content-Length", "0")]);
-      (Response.create(`Method_not_allowed, ~headers), "");
+    | _ => `Unmatched
     };
-  Reqd.respond_with_string(req_desc, res, contents);
-};
 
-let error_handler = (client, ~request=?, error, fn) => {
-  client |> ignore;
-  request |> ignore;
-  error |> ignore;
-  fn |> ignore;
-};
-
-let connection_handler = (~closer) =>
-  Httpaf_lwt.Server.create_connection_handler(
-    ~request_handler=request_handler(~closer),
-    ~error_handler,
+let serve = (~port, ~on_start) =>
+  Httpkit.(
+    Server.Infix.(
+      Server.make()
+      *> Server.Common.log
+      << Server.Common.router(route_handler)
+      |> Http.listen(~port, ~on_start)
+    )
   );
-
-let serve = (~port, ~on_start) => {
-  open Lwt.Infix;
-  let (forever, close) = Lwt.wait();
-
-  let listening_address = Unix.(ADDR_INET(inet_addr_loopback, port));
-
-  Lwt_io.establish_server_with_client_socket(
-    listening_address,
-    connection_handler(~closer=close),
-  )
-  >>= on_start
-  |> ignore;
-
-  forever;
-};

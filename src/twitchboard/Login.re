@@ -4,7 +4,7 @@ module LoginFlow = {
 
     let run_server =
       AuthServer.serve(~port=Config.default_port, ~on_start=_server =>
-        Logs_lwt.debug(m =>
+        Logs.debug(m =>
           m(
             "Running auth server at https://localhost:%d",
             Config.default_port,
