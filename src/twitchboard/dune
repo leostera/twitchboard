@@ -2,6 +2,6 @@
   (name twitchboard)
   (libraries
     twitch
-    notty
+    notty notty.lwt
     parsexp sexplib0 bos
     httpaf httpaf-lwt lwt logs logs.lwt))

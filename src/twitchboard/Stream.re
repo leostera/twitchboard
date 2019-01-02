@@ -1,19 +1,10 @@
+open Lwt.Infix;
+
 module LiveStream = {
   let print_stream: Twitch.Streams.Stream.t => Lwt.t(unit) =
-    stream =>
-      Logs_lwt.app(m => {
-        let started_at = Buffer.create(100);
-        let fmt = Format.formatter_of_buffer(started_at);
-        Ptime.pp_human((), fmt, stream.started_at);
-        Format.pp_print_flush(fmt, ());
-        m(
-          "Stream Title: %s\nStream ID: %s\nStarted At: %s\nViewer Count: %d\n",
-          stream.title,
-          stream.id,
-          started_at |> Buffer.contents,
-          stream.viewer_count,
-        );
-      });
+    _stream =>
+      UI.terminal(~s=(80, 40), ~f=(a, _) => Some(a), ~imgf=UI_Stream.p)
+      >|= (_ => ());
 
   let stats = () =>
     switch (Rresult.(Secrets.read_default() >>| Secrets.token)) {
