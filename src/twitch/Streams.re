@@ -2,14 +2,27 @@ module Stream = {
   type t = {
     id: string,
     viewer_count: int,
+    title: string,
+    started_at: Ptime.t,
   };
 
   let from_json = json => {
     open Yojson.Basic.Util;
-    let viewer_count = json |> member("viewer_count") |> to_int;
-    let id = json |> member("id") |> to_string;
+    let started_at =
+      json |> member("started_at") |> to_string |> Ptime.of_rfc3339;
 
-    Ok({viewer_count, id});
+    switch (started_at) {
+    | Ok((started_at, _, _)) =>
+      let viewer_count = json |> member("viewer_count") |> to_int;
+      let id = json |> member("id") |> to_string;
+      let title = json |> member("title") |> to_string;
+      Ok({viewer_count, id, title, started_at});
+    | Error(_) =>
+      switch (Ptime.rfc3339_error_to_msg(started_at)) {
+      | Ok(_) => Error(`How_did_we_get_here)
+      | Error(`Msg(msg)) => Error(`Parse_error(msg))
+      }
+    };
   };
 
   let list_from_json = jsonlist =>

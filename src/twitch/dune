@@ -3,6 +3,6 @@
   (libraries
     rresult
     httpkit
-    yojson uri 
+    yojson uri ptime
     logs logs.lwt stdlib
     ))

@@ -1,9 +1,19 @@
 module LiveStream = {
   let print_stream: Twitch.Streams.Stream.t => Lwt.t(unit) =
     stream =>
-      Logs_lwt.app(m =>
-        m("Stream ID: %s\tViewer Count: %d\n", stream.id, stream.viewer_count)
-      );
+      Logs_lwt.app(m => {
+        let started_at = Buffer.create(100);
+        let fmt = Format.formatter_of_buffer(started_at);
+        Ptime.pp_human((), fmt, stream.started_at);
+        Format.pp_print_flush(fmt, ());
+        m(
+          "Stream Title: %s\nStream ID: %s\nStarted At: %s\nViewer Count: %d\n",
+          stream.title,
+          stream.id,
+          started_at |> Buffer.contents,
+          stream.viewer_count,
+        );
+      });
 
   let stats = () =>
     switch (Rresult.(Secrets.read_default() >>| Secrets.token)) {
@@ -14,11 +24,10 @@ module LiveStream = {
     | Error(`Invalid_secrets) => Logs.err(m => m("Invalid secrets"))
     | Ok(token) =>
       Logs.debug(m => m("Read Token: %s", Twitch.Auth.Token.pp(token)));
-      Lwt.Infix.(
-        token
-        |> Twitch.Users.get_token_bearer
-        >>= (
-          result =>
+      let (loop, _finish) = Lwt.wait();
+      let rec work = result =>
+        Lwt.Infix.(
+          (
             switch (result) {
             | Ok(user) =>
               Twitch.Streams.stats(token, user, ~count=1)
@@ -39,9 +48,21 @@ module LiveStream = {
                 m("%s", err |> Messages.Errors.to_user_message)
               )
             }
+          )
+          >>= (_ => Lwt_unix.sleep(1.0))
+          >>= (_ => work(result))
+        );
+
+      Lwt.Infix.(
+        Lwt.async(() =>
+          token
+          |> Twitch.Users.get_token_bearer
+          >>= work
+          >>= (_ => Lwt.return_unit)
         )
-        |> Lwt_main.run
       );
+
+      loop |> Lwt_main.run;
     };
 };
 

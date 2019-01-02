@@ -47,5 +47,9 @@ module Errors = {
     | `Reading_error => "while reading the error response."
     | `Connection_error(_) => "while connecting to the Twitch API."
     | `Response_error(_) => "while requesting from the Twitch API."
+    | `Parse_error(msg) =>
+      "I could not parse something from the Twitch API, here's more info: \n"
+      ++ msg
+    | `How_did_we_get_here => "Something went truly wrong. Try again please!"
     };
 };
